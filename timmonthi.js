@@ -310,12 +310,4 @@ function displayResults(data, notFoundTerms = new Set()) {
             tableBody.appendChild(tr);
         });
     }
-
-    const currentSearchText = document.getElementById('searchTermInput').value.trim();
-    if (notFoundTerms.size > 0) {
-        const termList = Array.from(notFoundTerms).join(', ');
-        showModal('Không Tìm Thấy', `Không tìm thấy kết quả cho: <strong>${termList}</strong>.`, 'warning', null, 5000);
-    } else if (currentSearchText && data.length === 0) {
-        showModal('Không Có Kết Quả', `Không có kết quả nào cho "${currentSearchText}".`, 'warning', null, 3000);
-    }
 }
