@@ -323,3 +323,11 @@
                 width: 100%; 
             }
         }
+/* --- CSS CHO BÔI VÀNG KHỐI THI --- */
+.highlight-khoithi {
+    background-color: #fd7e14; /* Màu cam giống nút Tải Ảnh */
+    color: white;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 3px;
+}
