@@ -272,12 +272,25 @@ function searchData() {
     });
 
     const notFoundTerms = new Set(rawTerms.filter(term => !foundTerms.has(term)));
-    displayResults(filteredData, notFoundTerms);
+    // THAY ĐỔI: Truyền rawTerms vào displayResults
+    displayResults(filteredData, notFoundTerms, rawTerms);
 }
 
-function displayResults(data, notFoundTerms = new Set()) {
+// THAY ĐỔI: Thêm tham số searchTerms
+function displayResults(data, notFoundTerms = new Set(), searchTerms = []) {
     const tableBody = document.querySelector('#resultTable tbody');
     const tableHead = document.querySelector('#resultTable thead tr');
+
+    // --- BẮT ĐẦU PHẦN THÊM MỚI ---
+    // Hàm nhỏ giúp escape ký tự đặc biệt cho Regex
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Tạo một Set chứa các phần "Khối thi" từ tìm kiếm (ví dụ: "U")
+    const searchKhoiThiParts = new Set(searchTerms.map(term => splitSearchTerm(term).khoiThi).filter(Boolean));
+
+    // Xác định tên cột "Khối thi" thực tế
+    const KHOI_THI_KEY = HEADERS.find(h => normalizeHeaderName(h).toUpperCase().includes(KHOI_THI_HEADER_NAME.toUpperCase())) || KHOI_THI_HEADER_NAME;
+    // --- KẾT THÚC PHẦN THÊM MỚI ---
 
     tableHead.innerHTML = '';
     tableBody.innerHTML = '';
@@ -301,13 +314,34 @@ function displayResults(data, notFoundTerms = new Set()) {
             HEADERS.forEach(header => {
                 const td = document.createElement('td');
                 let cellValue = row[header] || '';
+
                 if (header === NGAY_THI_KEY && typeof cellValue === 'number' && cellValue > 0) {
                     cellValue = excelSerialToJSDate(cellValue);
                 }
-                td.textContent = cellValue;
+
+                // --- BẮT ĐẦU PHẦN THAY ĐỔI LOGIC HIỂN THỊ ---
+                // Nếu đây là cột "Khối thi" và chúng ta có tìm kiếm khối thi (VD: "U")
+                if (header === KHOI_THI_KEY && searchKhoiThiParts.size > 0) {
+                    let htmlContent = cellValue;
+                    // Lặp qua từng khối thi được tìm (VD: "U")
+                    searchKhoiThiParts.forEach(khoi => {
+                        // Tạo Regex để tìm chính xác khối thi đó
+                        const regex = new RegExp(escapeRegExp(khoi), 'gi');
+                        // Thay thế nó bằng thẻ span đã tạo ở CSS
+                        htmlContent = htmlContent.replace(regex, `<span class="highlight-khoithi">$&</span>`);
+                    });
+                    td.innerHTML = htmlContent;
+                } else {
+                    // Nếu không thì giữ nguyên
+                    td.textContent = cellValue;
+                }
+                // --- KẾT THÚC PHẦN THAY ĐỔI LOGIC HIỂN THỊ ---
+
                 tr.appendChild(td);
             });
             tableBody.appendChild(tr);
         });
     }
+
+    // Đã xóa khối lệnh if/else if hiển thị modal tại đây
 }
